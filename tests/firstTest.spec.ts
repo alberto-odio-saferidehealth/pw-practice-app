@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:4200/");
@@ -51,4 +51,67 @@ test("User facing locators", async ({ page }) => {
   await page.getByTitle("IoT Dashboard").click();
 
   //await page.getByTestId("SignIn").click(); This one looks for data-testid="SignIn" in the source code
+});
+
+test("locating child elements", async ({ page }) => {
+  //these 2 do the same one is shorter
+  await page.locator("nb-card nb-radio :text-is('Option 1')").click();
+  await page
+    .locator("nb-card")
+    .locator("nb-radio")
+    .locator(":text-is('Option 2')")
+    .click();
+
+  await page
+    .locator("nb-card")
+    .getByRole("button", { name: "Sign In" })
+    .first()
+    .click();
+
+  await page.locator("nb-card").nth(3).getByRole("button").click(); //the order could change, try to use unique elements
+});
+
+test("locating parent elements", async ({ page }) => {
+  await page
+    .locator("nb-card", { hasText: "Using the Grid" })
+    .getByRole("textbox", { name: "Email" })
+    .click();
+  await page
+    .locator("nb-card", { has: page.locator("#inputEmail") })
+    .getByRole("textbox", { name: "Email" })
+    .click();
+  await page
+    .locator("nb-card")
+    .filter({ hasText: "Basic form" })
+    .getByRole("textbox", { name: "Email" })
+    .click();
+  await page
+    .locator("nb-card")
+    .filter({ has: page.locator(".status-danger") })
+    .getByRole("textbox", { name: "Password" })
+    .click();
+  await page
+    .locator("nb-card")
+    .filter({ has: page.locator("nb-checkbox") })
+    .filter({ hasText: "Sign in" })
+    .getByRole("textbox", { name: "Email" })
+    .click();
+  //not recommended
+  await page
+    .locator(":text-is('Using the Grid')")
+    .locator("..")
+    .getByRole("textbox", { name: "Email" })
+    .click();
+});
+
+test("Reusing the locators", async ({ page }) => {
+  const basicForm = page.locator("nb-card").filter({ hasText: "Basic form" });
+  const emailField = basicForm.getByRole("textbox", { name: "Email" });
+
+  await emailField.fill("test@test.com");
+  await basicForm.getByRole("textbox", { name: "Password" }).fill("Welcome123");
+  await basicForm.locator("nb-checkbox").click();
+  await basicForm.getByRole("button").click();
+
+  await expect(emailField).toHaveValue("test@test.com");
 });
