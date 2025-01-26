@@ -1,3 +1,8 @@
+//npm start
+//open browser to localhost:4200
+//npx playwright test --ui
+//Section 4 Lesson 29
+
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -114,4 +119,24 @@ test("Reusing the locators", async ({ page }) => {
   await basicForm.getByRole("button").click();
 
   await expect(emailField).toHaveValue("test@test.com");
+});
+
+test("extracting values", async ({ page }) => {
+  //single test value
+  const basicForm = page.locator("nb-card").filter({ hasText: "Basic form" });
+  const buttonText = await basicForm.locator("button").textContent();
+  expect(buttonText).toEqual("Submit");
+
+  //all text value
+  const allRadioButtonLables = await page.locator("nb-radio").allTextContents();
+  expect(allRadioButtonLables).toContain("Option 1");
+
+  //input value
+  const emailField = basicForm.getByRole("textbox", { name: "Email" });
+  await emailField.fill("test@test.com");
+  const emailValue = await emailField.inputValue();
+  expect(emailValue).toEqual("test@test.com");
+
+  const placeholderValue = await emailField.getAttribute("placeholder");
+  expect(placeholderValue).toEqual("Email");
 });
