@@ -1,7 +1,7 @@
 //npm start
 //open browser to localhost:4200
 //npx playwright test --ui
-//Section 4 Lesson 29
+//Section 4 Lesson 30
 
 import { test, expect } from "@playwright/test";
 
@@ -139,4 +139,24 @@ test("extracting values", async ({ page }) => {
 
   const placeholderValue = await emailField.getAttribute("placeholder");
   expect(placeholderValue).toEqual("Email");
+});
+
+test("assertions", async ({ page }) => {
+  const basicFormButton = page
+    .locator("nb-card")
+    .filter({ hasText: "Basic form" })
+    .locator("button");
+  //general assertions
+  const value = 5;
+  expect(value).toEqual(5);
+
+  const text = await basicFormButton.textContent();
+  expect(text).toEqual("Submit");
+
+  //Locator assertion
+  await expect(basicFormButton).toHaveText("Submit");
+
+  //Soft assertion - not really a good practice
+  await expect.soft(basicFormButton).toHaveText("Submit5");
+  await basicFormButton.click();
 });
